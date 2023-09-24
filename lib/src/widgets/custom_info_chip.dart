@@ -19,7 +19,6 @@ class CustomInfoChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.0),
       ),
       color: context.colorScheme.inversePrimary,
-      //surfaceTintColor: context.colorScheme.inversePrimary,
       elevation: elevation ? 8 : 0.0,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
@@ -28,7 +27,7 @@ class CustomInfoChip extends StatelessWidget {
           maxLines: 1,
           style: TextStyle(
             fontSize: 12,
-            color: context.colorScheme.onBackground,
+            color: context.colorScheme.inverseSurface,
           ),
         ),
       ),

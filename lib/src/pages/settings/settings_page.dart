@@ -38,24 +38,62 @@ class SettingsPage extends StatelessWidget {
               delegate: SliverChildListDelegate(
                 [
                   Card(
+                    color: context.colorScheme.primaryContainer,
                     clipBehavior: Clip.antiAlias,
                     margin: const EdgeInsets.all(16),
-                    child: Consumer(builder: (context, ref, child) {
-                      return SettingsOption(
-                        title: 'Твоя группа:'
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        return ListTile(
+                          title: Text(
+                            'Твоя группа: '
                             '${StorageService.instance.userGroup.capitalizeFirstTwoChars()}',
-                        subtitle: 'Нажми, чтобы изменить',
-                        onTap: () {
-                          StorageService.instance.deleteUserGroup().then((_) {
-                            StorageService.instance.userGroup = '';
-                            ref
-                                .read(routerNotifierProvider.notifier)
-                                .userLogin = false;
-                            context.goNamed('login');
-                          });
-                        },
-                      );
-                    }),
+                            style: TextStyle(
+                              color: context.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Нажми, чтобы изменить',
+                            style: TextStyle(
+                              color: context.colorScheme.onPrimaryContainer
+                                  .withOpacity(0.8),
+                            ),
+                          ),
+                          onTap: () async {
+                            bool? dialogValue = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Изменить группу?'),
+                                icon: const Icon(Icons.info_outline),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Отмена'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text('Изменить'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (dialogValue == null || !dialogValue) {
+                              return;
+                            }
+
+                            StorageService.instance.deleteUserGroup().then((_) {
+                              StorageService.instance.userGroup = '';
+                              ref
+                                  .read(routerNotifierProvider.notifier)
+                                  .userLogin = false;
+                              context.goNamed('login');
+                            });
+                          },
+                        );
+                      },
+                    ),
                   ),
                   SettingsGroup(
                     label: 'О приложении',
@@ -77,12 +115,6 @@ class SettingsPage extends StatelessWidget {
                           return SettingsOption(
                             title: 'Версия: $version ($build) ($kAppArch)',
                             subtitle: 'от $dateString ($timeString)',
-                            // onTap: () {
-                            //   ref
-                            //       .read(routerNotifierProvider.notifier)
-                            //       .userLogin = false;
-                            //   context.goNamed('login');
-                            // },
                           );
                         },
                       ),

@@ -53,3 +53,36 @@ final List<LessonTime> lessonTimeList = [
     end: const TimeOfDay(hour: 18, minute: 50),
   ),
 ];
+
+final List<LessonTime> lessonSaturdayTimeList = [
+  LessonTime(
+    number: 1,
+    start: const TimeOfDay(hour: 8, minute: 0),
+    end: const TimeOfDay(hour: 9, minute: 30),
+  ),
+  LessonTime(
+    number: 2,
+    start: const TimeOfDay(hour: 9, minute: 45),
+    end: const TimeOfDay(hour: 11, minute: 15),
+  ),
+  LessonTime(
+    number: 3,
+    start: const TimeOfDay(hour: 11, minute: 30),
+    end: const TimeOfDay(hour: 13, minute: 0),
+  ),
+  LessonTime(
+    number: 4,
+    start: const TimeOfDay(hour: 13, minute: 15),
+    end: const TimeOfDay(hour: 14, minute: 45),
+  ),
+  LessonTime(
+    number: 5,
+    start: const TimeOfDay(hour: 15, minute: 0),
+    end: const TimeOfDay(hour: 16, minute: 30),
+  ),
+  LessonTime(
+    number: 6,
+    start: const TimeOfDay(hour: 16, minute: 45),
+    end: const TimeOfDay(hour: 18, minute: 15),
+  ),
+];

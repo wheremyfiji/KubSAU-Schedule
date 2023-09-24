@@ -41,7 +41,6 @@ class LessonCard extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    // '$lessonNumber пара (${time.toFormattedString()})${isLecture ? ' • Лекция' : ''}',
                     '$lessonNumber пара (${time.toFormattedString()})',
                     style: context.textTheme.bodySmall?.copyWith(
                       fontSize: 14,
