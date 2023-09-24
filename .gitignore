@@ -10,6 +10,7 @@
 .svn/
 migrate_working_dir/
 lib/secret.dart
+lib/build_date_time.dart
 
 # IntelliJ related
 *.iml
