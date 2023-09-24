@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -8,18 +10,34 @@ import 'package:flutter/foundation.dart';
 import '../../secret.dart';
 
 class DioNetworkService implements NetworkService {
-  DioNetworkService() {
+  final HiveCacheStore cacheStore;
+
+  DioNetworkService({required this.cacheStore}) {
     dio = Dio(baseOptions);
 
-    dio.interceptors.add(RetryInterceptor(
+    dio.interceptors.add(
+      RetryInterceptor(
         dio: dio,
         logPrint: log,
         retries: 1,
         retryDelays: const [
           Duration(seconds: 4),
-        ]));
+        ],
+      ),
+    );
 
-    dio.interceptors.add(RequestInterceptors(dio));
+    final cacheOptions = CacheOptions(
+      store: cacheStore,
+      policy: CachePolicy.refreshForceCache,
+      maxStale: const Duration(days: 7),
+      keyBuilder: CacheOptions.defaultCacheKeyBuilder,
+      allowPostMethod: false,
+      hitCacheOnErrorExcept: [304],
+    );
+
+    dio.interceptors.add(RequestInterceptors(dio, cacheStore));
+
+    dio.interceptors.add(DioCacheInterceptor(options: cacheOptions));
 
     if (kDebugMode) {
       dio.interceptors.add(LogInterceptor(
@@ -85,17 +103,30 @@ abstract class NetworkService {
 
 class RequestInterceptors extends Interceptor {
   final Dio dio;
+  final HiveCacheStore cacheStore;
 
-  RequestInterceptors(this.dio);
+  RequestInterceptors(this.dio, this.cacheStore);
 
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     ConnectivityResult connectivity = await Connectivity().checkConnectivity();
+
     if (connectivity == ConnectivityResult.none) {
+      final key = CacheOptions.defaultCacheKeyBuilder(options);
+      final cache = await cacheStore.get(key);
+
+      if (cache != null &&
+          DateTime.now().difference(cache.responseDate).inDays < 7) {
+        return handler.resolve(cache.toResponse(options, fromNetwork: false));
+      }
+
       handler.reject(
         NoInternetConnectionException(options),
       );
+
       return;
     }
     super.onRequest(options, handler);
