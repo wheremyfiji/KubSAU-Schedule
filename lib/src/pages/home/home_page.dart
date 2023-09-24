@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../providers/home_page_provider.dart';
 import '../../services/storage_service.dart';
@@ -33,6 +34,10 @@ class HomePage extends HookConsumerWidget {
     final tabController = useTabController(
       initialLength: 6,
     );
+
+    final isLoading = provider.scheduleAsync.isLoading &&
+        !provider.scheduleAsync.hasError &&
+        !provider.scheduleAsync.hasValue;
 
     useEffect(
       () {
@@ -129,8 +134,13 @@ class HomePage extends HookConsumerWidget {
                           itemBuilder: (context, index) {
                             final lesson = lessons[index];
 
+                            final now = DateTime.now();
+
                             final lessonNumber = lesson.lessonNumber ?? 1;
-                            final time = AppUtils().getLessonTime(lessonNumber);
+                            final time = AppUtils().getLessonTime(
+                              lessonNumber,
+                              isSaturday: now.weekday == DateTime.saturday,
+                            );
 
                             final current = (provider.currentDayOfWeek ==
                                     lesson.dayOfWeek) &&
@@ -139,7 +149,7 @@ class HomePage extends HookConsumerWidget {
                                   time.start,
                                   time.end,
                                 ) &&
-                                DateTime.now().weekday != DateTime.sunday;
+                                now.weekday != DateTime.sunday;
 
                             return Padding(
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
@@ -178,11 +188,9 @@ class HomePage extends HookConsumerWidget {
         clipBehavior: Clip.antiAlias,
         elevation: 1,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            context.mediaQuery.viewPadding.bottom,
+          padding: EdgeInsets.only(
+            top: 16,
+            bottom: context.mediaQuery.viewPadding.bottom,
           ),
           child: Row(
             //crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,12 +199,19 @@ class HomePage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    StorageService.instance.userGroup.capitalizeFirstTwoChars(),
-                    style: context.textTheme.titleMedium,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      StorageService.instance.userGroup
+                          .capitalizeFirstTwoChars(),
+                      style: context.textTheme.titleMedium,
+                    ),
                   ),
-                  Text(
-                    provider.selectedWeek == 1 ? '2 неделя' : '1 неделя',
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      provider.selectedWeek == 1 ? '2 неделя' : '1 неделя',
+                    ),
                   ),
 
                   // Wrap(
@@ -226,9 +241,92 @@ class HomePage extends HookConsumerWidget {
                 ],
               ),
               const Spacer(),
-              FloatingActionButton(
-                onPressed: () {},
-                child: const Icon(Icons.search),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 600),
+                reverseDuration: const Duration(milliseconds: 300),
+                child: isLoading
+                    ? const SizedBox.shrink()
+                    : IconButton.filledTonal(
+                        tooltip: 'Выбор недели',
+                        icon: const Icon(Icons.event_rounded),
+                        style: const ButtonStyle(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          //visualDensity: VisualDensity.compact,
+                          // padding: MaterialStateProperty.all<EdgeInsets>(
+                          //   const EdgeInsets.all(0),
+                          // ),
+                        ),
+                        onPressed: () {
+                          final updateDate = provider.scheduleAsync.asData
+                              ?.value.weeks?[provider.selectedWeek].dtUpdated;
+
+                          showModalBottomSheet<void>(
+                            context: context,
+                            useSafeArea: true,
+                            showDragHandle: true,
+                            useRootNavigator: true,
+                            isScrollControlled: true,
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width >= 700
+                                  ? 700
+                                  : double.infinity,
+                            ),
+                            builder: (context) {
+                              return SafeArea(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 16),
+                                      child: Text(
+                                        'Выбор недели',
+                                        style: context.textTheme.titleLarge,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 16),
+                                      child: Text(
+                                        'Обновлено: ${DateFormat.yMMMd().format(updateDate!)}',
+                                        style: context.textTheme.titleSmall,
+                                      ),
+                                    ),
+                                    RadioListTile(
+                                      title: Text(
+                                        '1 неделя${provider.currentWeek == 0 ? ' (текущая)' : ''}',
+                                      ),
+                                      value: 0,
+                                      groupValue: provider.selectedWeek,
+                                      onChanged: (value) {
+                                        provider.changeWeek(value!);
+                                        context.navigator.pop();
+                                      },
+                                    ),
+                                    RadioListTile(
+                                      title: Text(
+                                        '2 неделя${provider.currentWeek == 1 ? ' (текущая)' : ''}',
+                                      ),
+                                      value: 1,
+                                      groupValue: provider.selectedWeek,
+                                      onChanged: (value) {
+                                        provider.changeWeek(value!);
+                                        context.navigator.pop();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16),
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  child: const Icon(Icons.search),
+                ),
               ),
             ],
           ),

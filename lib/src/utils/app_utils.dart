@@ -14,8 +14,12 @@ class AppUtils {
     return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
   }
 
-  LessonTime getLessonTime(int number) {
-    return lessonTimeList[number - 1];
+  LessonTime getLessonTime(int number, {required bool isSaturday}) {
+    final lessonNumber = number - 1;
+
+    return isSaturday
+        ? lessonSaturdayTimeList[lessonNumber]
+        : lessonTimeList[lessonNumber];
   }
 
   void showSnackBar(

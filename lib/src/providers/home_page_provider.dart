@@ -25,6 +25,7 @@ class HomePageNotifier extends ChangeNotifier {
 
   late DateTime now;
   late bool isEvenWeek;
+  late int currentWeek;
   late int currentDayOfWeek;
 
   int selectedWeek = 0;
@@ -39,12 +40,14 @@ class HomePageNotifier extends ChangeNotifier {
     now = DateTime.now();
 
     isEvenWeek = now.isEvenWeek();
+    currentWeek = isEvenWeek ? 1 : 0;
     selectedWeek = isEvenWeek ? 1 : 0;
     currentDayOfWeek = now.weekday;
 
     if (currentDayOfWeek == DateTime.sunday) {
       currentDayOfWeek = DateTime.monday;
       isEvenWeek = !isEvenWeek;
+      currentWeek = isEvenWeek ? 1 : 0;
       selectedWeek = isEvenWeek ? 1 : 0;
     }
 
