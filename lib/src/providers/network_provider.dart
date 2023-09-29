@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../services/network_service.dart';
 
 final networkProvider = Provider<NetworkService>((ref) {
-  //final temp = ref.watch(appTempDirectoryProvider);
   final cacheStore = ref.watch(dioCacheStroreProvider);
 
   return DioNetworkService(cacheStore: cacheStore);

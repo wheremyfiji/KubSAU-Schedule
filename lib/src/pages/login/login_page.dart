@@ -47,97 +47,102 @@ class LoginPage extends HookConsumerWidget {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(),
-        body: LayoutBuilder(
-          builder: (context, constraint) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraint.maxHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: context.mediaQuery.padding.bottom,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          'Привет!',
-                          style: TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Для продолжения введи номер своей группы',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        TextField(
-                          autocorrect: false,
-                          controller: textFieldController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(12.0)),
+        body: SafeArea(
+          top: false,
+          bottom: false,
+          child: LayoutBuilder(
+            builder: (context, constraint) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraint.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: context.mediaQuery.padding.bottom,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Привет!',
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
                             ),
-                            labelText: 'Номер группы',
                           ),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        FilledButton(
-                          onPressed: (userGroup.value.length < 6 || isLoading)
-                              ? null
-                              : () async {
-                                  RegExp regex = RegExp(r'^[а-яА-Я]{2}\d{4}$');
+                          const SizedBox(height: 2),
+                          Text(
+                            'Для продолжения введи номер своей группы',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          TextField(
+                            autocorrect: false,
+                            controller: textFieldController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12.0)),
+                              ),
+                              labelText: 'Номер группы',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          FilledButton(
+                            onPressed: (userGroup.value.length < 6 || isLoading)
+                                ? null
+                                : () async {
+                                    RegExp regex =
+                                        RegExp(r'^[а-яА-Я]{2}\d{4}$');
 
-                                  if (!regex.hasMatch(userGroup.value)) {
-                                    textFieldController.clear();
-                                    AppUtils().showErrorSnackBar(
-                                      context,
-                                      content: 'Неверный номер группы',
-                                    );
-                                    return;
-                                  }
+                                    if (!regex.hasMatch(userGroup.value)) {
+                                      textFieldController.clear();
+                                      AppUtils().showErrorSnackBar(
+                                        context,
+                                        content: 'Неверный номер группы',
+                                      );
+                                      return;
+                                    }
 
-                                  StorageService.instance.userGroup =
-                                      userGroup.value;
+                                    StorageService.instance.userGroup =
+                                        userGroup.value;
 
-                                  await ref
-                                      .read(continueButtonProvider.notifier)
-                                      .check(onFinally: () {
-                                    ref
-                                        .read(routerNotifierProvider.notifier)
-                                        .userLogin = true;
-                                    GoRouter.of(context).go('/');
-                                  });
-                                },
-                          child: isLoading
-                              ? const SizedBox.square(
-                                  dimension: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : const Text('Продолжить'),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                      ],
+                                    await ref
+                                        .read(continueButtonProvider.notifier)
+                                        .check(onFinally: () {
+                                      ref
+                                          .read(routerNotifierProvider.notifier)
+                                          .userLogin = true;
+                                      GoRouter.of(context).go('/');
+                                    });
+                                  },
+                            child: isLoading
+                                ? const SizedBox.square(
+                                    dimension: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                    ),
+                                  )
+                                : const Text('Продолжить'),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

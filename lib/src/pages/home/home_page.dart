@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:collection/collection.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/home_page_provider.dart';
@@ -39,6 +40,10 @@ class HomePage extends HookConsumerWidget {
         !provider.scheduleAsync.hasError &&
         !provider.scheduleAsync.hasValue;
 
+    final hasValue = !provider.scheduleAsync.isLoading &&
+        !provider.scheduleAsync.hasError &&
+        provider.scheduleAsync.hasValue;
+
     useEffect(
       () {
         final timer = Timer.periodic(const Duration(seconds: 10), (time) {
@@ -52,6 +57,69 @@ class HomePage extends HookConsumerWidget {
       tabController.animateTo(provider.currentDayOfWeek - 1);
       return null;
     }, [provider.scheduleAsync]);
+
+    // final connectivityChanged =
+    //     useStream(useMemoized(() => Connectivity().onConnectivityChanged));
+
+    // useEffect(
+    //   () {
+    //     if (
+    //         //!connectivityChanged.hasData &&
+    //         connectivityChanged.data != ConnectivityResult.none) {
+    //       return null;
+    //     }
+
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       AppUtils().showErrorSnackBar(context,
+    //           //content: 'Network state: $state',
+    //           content: 'Отсутствует подключение к интернету');
+    //     });
+
+    //     return null;
+    //   },
+    //   [connectivityChanged, provider.scheduleAsync],
+    // );
+
+    // final networkState = useNetworkState();
+
+    // useEffect(
+    //   () {
+    //     // if (connectivityChanged.data != ConnectivityResult.none &&
+    //     //     connectivityChanged.connectionState == ConnectionState.done) {
+    //     //   return null;
+    //     // }
+
+    //     // if (connectivityChanged.data != ConnectivityResult.none &&
+    //     //     connectivityChanged.data != null) {
+    //     //   return null;
+    //     // }
+
+    //     print('fetched: ${networkState.fetched}');
+    //     print('connectivity: ${networkState.connectivity}');
+
+    //     if (!networkState.fetched &&
+    //         networkState.connectivity == ConnectivityResult.none) {
+    //       return null;
+    //     }
+
+    //     // if (!networkState.fetched &&
+    //     //     networkState.connectivity != ConnectivityResult.none) {
+    //     //   return null;
+    //     // }
+
+    //     if (networkState.connectivity != ConnectivityResult.none) {
+    //       return null;
+    //     }
+
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       AppUtils().showErrorSnackBar(context,
+    //           //content: 'Network state: $state',
+    //           content: 'Отсутствует подключение к интернету');
+    //     });
+    //     return null;
+    //   },
+    //   [networkState, provider.scheduleAsync],
+    // );
 
     return Scaffold(
       body: NestedScrollView(
@@ -165,7 +233,7 @@ class HomePage extends HookConsumerWidget {
                     ),
                   );
                 }).toList(),
-              );
+              ).animate().fadeIn();
             },
             error: (e, _) => Center(
                 child: CustomErrorWidget(
@@ -176,159 +244,168 @@ class HomePage extends HookConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Material(
-        color: Theme.of(context).colorScheme.surface,
-        surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
-        shadowColor: Colors.transparent,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-        type: MaterialType.card,
-        clipBehavior: Clip.antiAlias,
-        elevation: 1,
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 16,
-            bottom: context.mediaQuery.viewPadding.bottom,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        bottom: false,
+        child: Material(
+          color: Theme.of(context).colorScheme.surface,
+          surfaceTintColor: Theme.of(context).colorScheme.surfaceTint,
+          shadowColor: Colors.transparent,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
-          child: Row(
-            //crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: Text(
-                      StorageService.instance.userGroup
-                          .capitalizeFirstTwoChars(),
-                      style: context.textTheme.titleMedium,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: Text(
-                      provider.selectedWeek == 1 ? '2 неделя' : '1 неделя',
-                    ),
-                  ),
-
-                  // Wrap(
-                  //   spacing: 4,
-                  //   children: [
-                  //     CompactTextButton(
-                  //       label: '1 неделя',
-                  //       selected: provider.selectedWeek == 0,
-                  //       onPressed: () => provider.changeWeek(0),
-                  //     ),
-                  //     const Text('•'),
-                  //     CompactTextButton(
-                  //       label: '2 неделя',
-                  //       selected: provider.selectedWeek == 1,
-                  //       onPressed: () => provider.changeWeek(1),
-                  //     ),
-                  //     IconButton(
-                  //       onPressed: () {},
-                  //       icon: const Icon(Icons.restore),
-                  //       style: const ButtonStyle(
-                  //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  //         visualDensity: VisualDensity.compact,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
-              ),
-              const Spacer(),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                reverseDuration: const Duration(milliseconds: 300),
-                child: isLoading
-                    ? const SizedBox.shrink()
-                    : IconButton.filledTonal(
-                        tooltip: 'Выбор недели',
-                        icon: const Icon(Icons.event_rounded),
-                        style: const ButtonStyle(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          //visualDensity: VisualDensity.compact,
-                          // padding: MaterialStateProperty.all<EdgeInsets>(
-                          //   const EdgeInsets.all(0),
-                          // ),
-                        ),
-                        onPressed: () {
-                          final updateDate = provider.scheduleAsync.asData
-                              ?.value.weeks?[provider.selectedWeek].dtUpdated;
-
-                          showModalBottomSheet<void>(
-                            context: context,
-                            useSafeArea: true,
-                            showDragHandle: true,
-                            useRootNavigator: true,
-                            isScrollControlled: true,
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width >= 700
-                                  ? 700
-                                  : double.infinity,
-                            ),
-                            builder: (context) {
-                              return SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 16),
-                                      child: Text(
-                                        'Выбор недели',
-                                        style: context.textTheme.titleLarge,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 16),
-                                      child: Text(
-                                        'Обновлено: ${DateFormat.yMMMd().format(updateDate!)}',
-                                        style: context.textTheme.titleSmall,
-                                      ),
-                                    ),
-                                    RadioListTile(
-                                      title: Text(
-                                        '1 неделя${provider.currentWeek == 0 ? ' (текущая)' : ''}',
-                                      ),
-                                      value: 0,
-                                      groupValue: provider.selectedWeek,
-                                      onChanged: (value) {
-                                        provider.changeWeek(value!);
-                                        context.navigator.pop();
-                                      },
-                                    ),
-                                    RadioListTile(
-                                      title: Text(
-                                        '2 неделя${provider.currentWeek == 1 ? ' (текущая)' : ''}',
-                                      ),
-                                      value: 1,
-                                      groupValue: provider.selectedWeek,
-                                      onChanged: (value) {
-                                        provider.changeWeek(value!);
-                                        context.navigator.pop();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
+          type: MaterialType.card,
+          clipBehavior: Clip.antiAlias,
+          elevation: 1,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: 16,
+              bottom: context.mediaQuery.viewPadding.bottom,
+            ),
+            child: Row(
+              //crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text(
+                        StorageService.instance.userGroup
+                            .capitalizeFirstTwoChars(),
+                        style: context.textTheme.titleMedium,
                       ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16),
-                child: FloatingActionButton(
-                  onPressed: () {},
-                  child: const Icon(Icons.search),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text(
+                        provider.selectedWeek == 1 ? '2 неделя' : '1 неделя',
+                      ),
+                    ),
+
+                    // Wrap(
+                    //   spacing: 4,
+                    //   children: [
+                    //     CompactTextButton(
+                    //       label: '1 неделя',
+                    //       selected: provider.selectedWeek == 0,
+                    //       onPressed: () => provider.changeWeek(0),
+                    //     ),
+                    //     const Text('•'),
+                    //     CompactTextButton(
+                    //       label: '2 неделя',
+                    //       selected: provider.selectedWeek == 1,
+                    //       onPressed: () => provider.changeWeek(1),
+                    //     ),
+                    //     IconButton(
+                    //       onPressed: () {},
+                    //       icon: const Icon(Icons.restore),
+                    //       style: const ButtonStyle(
+                    //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    //         visualDensity: VisualDensity.compact,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                  ],
                 ),
-              ),
-            ],
+                const Spacer(),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 600),
+                  reverseDuration: const Duration(milliseconds: 300),
+                  child: (isLoading || !hasValue)
+                      ? const SizedBox.shrink()
+                      : IconButton.filledTonal(
+                          tooltip: 'Выбор недели',
+                          icon: const Icon(Icons.event_rounded),
+                          style: const ButtonStyle(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            //visualDensity: VisualDensity.compact,
+                            // padding: MaterialStateProperty.all<EdgeInsets>(
+                            //   const EdgeInsets.all(0),
+                            // ),
+                          ),
+                          onPressed: () {
+                            final updateDate = provider.scheduleAsync.asData
+                                ?.value.weeks?[provider.selectedWeek].dtUpdated;
+
+                            showModalBottomSheet<void>(
+                              context: context,
+                              useSafeArea: true,
+                              showDragHandle: true,
+                              useRootNavigator: true,
+                              isScrollControlled: true,
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width >= 700
+                                        ? 700
+                                        : double.infinity,
+                              ),
+                              builder: (context) {
+                                return SafeArea(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 16),
+                                        child: Text(
+                                          'Выбор недели',
+                                          style: context.textTheme.titleLarge,
+                                        ),
+                                      ),
+                                      if (updateDate != null)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 16),
+                                          child: Text(
+                                            'Обновлено: ${DateFormat.yMMMd().format(updateDate)}',
+                                            style: context.textTheme.titleSmall,
+                                          ),
+                                        ),
+                                      RadioListTile(
+                                        title: Text(
+                                          '1 неделя${provider.currentWeek == 0 ? ' (текущая)' : ''}',
+                                        ),
+                                        value: 0,
+                                        groupValue: provider.selectedWeek,
+                                        onChanged: (value) {
+                                          provider.changeWeek(value!);
+                                          context.navigator.pop();
+                                        },
+                                      ),
+                                      RadioListTile(
+                                        title: Text(
+                                          '2 неделя${provider.currentWeek == 1 ? ' (текущая)' : ''}',
+                                        ),
+                                        value: 1,
+                                        groupValue: provider.selectedWeek,
+                                        onChanged: (value) {
+                                          provider.changeWeek(value!);
+                                          context.navigator.pop();
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16),
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    child: const Icon(Icons.search),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

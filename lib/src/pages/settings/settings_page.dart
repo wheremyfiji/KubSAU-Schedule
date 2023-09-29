@@ -1,10 +1,12 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../build_date_time.dart';
 import '../../providers/environment_provider.dart';
@@ -98,6 +100,15 @@ class SettingsPage extends StatelessWidget {
                   SettingsGroup(
                     label: 'О приложении',
                     options: [
+                      SettingsOption(
+                        icon: FontAwesomeIcons.github,
+                        title: 'GitHub',
+                        subtitle: 'Исходный код приложения',
+                        onTap: () => launchUrlString(
+                          'https://github.com/wheremyfiji/KubSAU-Schedule',
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
                       Consumer(
                         builder: (context, ref, child) {
                           final environment = ref.watch(environmentProvider);
