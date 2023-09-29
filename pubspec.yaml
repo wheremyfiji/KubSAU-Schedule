@@ -2,7 +2,7 @@ name: kubsau_schedule
 description: A new Flutter project.
 publish_to: 'none'
 
-version: 0.0.2+4
+version: 0.1.0+8
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
